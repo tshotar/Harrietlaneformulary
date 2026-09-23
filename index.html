@@ -190,12 +190,15 @@ function updateCur(){
   if(cur===curL)return;curL=cur;
   r.querySelectorAll('a').forEach(a=>a.classList.toggle('cur',a.dataset.l===cur));
 }
+let lastSlot=-1;
 function railScroll(f){
   if(!LT||LTdirty)buildLT();if(!LT)return'';
-  const u=Math.min(25.999,Math.max(0,f*26)),i=Math.floor(u),fr=u-i;
-  const ya=LT.SY[i],yb=i<25?LT.SY[i+1]:LT.maxY;
-  scrollTo(0,ya+(yb-ya)*fr);return LT.SL[i];
+  const i=Math.min(25,Math.max(0,Math.floor(f*26)));
+  if(i!==lastSlot){lastSlot=i;scrollTo(0,LT.SY[i])}
+  return LT.SL[i];
 }
+document.addEventListener('touchmove',()=>{const a=document.activeElement;if(a&&a.id==='q')a.blur()},{passive:true});
+if(window.visualViewport){const vv=visualViewport,pin=()=>{const el=document.querySelector('.top,.bar');if(el)el.style.transform=vv.offsetTop>1?`translateY(${vv.offsetTop}px)`:''};vv.addEventListener('scroll',pin);vv.addEventListener('resize',pin)}
 ['gesturestart','gesturechange','gestureend'].forEach(g=>document.addEventListener(g,e=>e.preventDefault()));
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
 function fitRail(){const t=$('.top');if(!t)return;const v=t.offsetHeight;if(v!==lastTH){lastTH=v;root.style.setProperty('--th',v+'px');LTdirty=true}}
@@ -225,7 +228,7 @@ function showList(){
     raf=requestAnimationFrame(()=>{raf=0;const l=railScroll(pend);if(l&&l!==last){last=l;bub.textContent=l}bub.style.opacity=1;updateCur()});
   };
   const up=()=>{down=false;last='';bub.style.opacity=0};
-  rail.onpointerdown=e=>{e.preventDefault();down=true;last='';LTdirty=true;try{rail.setPointerCapture(e.pointerId)}catch(_){}at(e)};
+  rail.onpointerdown=e=>{e.preventDefault();down=true;last='';LTdirty=true;lastSlot=-1;try{rail.setPointerCapture(e.pointerId)}catch(_){}at(e)};
   rail.onpointermove=e=>{if(down){e.preventDefault();at(e)}};
   rail.onpointerup=up;rail.onpointercancel=up;rail.onlostpointercapture=up;
   rail.oncontextmenu=e=>e.preventDefault();
